@@ -7,15 +7,25 @@ pipeline{
     }
 
     stages{
-        stage('checkout'){
+          stage('build'){
             steps{
-                checkout([$class: 'GitSCM', branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[credentialsId: 'github access', url: 'https://github.com/sreenivas449/java-hello-world-with-maven.git']]])
-            }
-        }
-        stage('build'){
+               bat 'mvn clean package'
+              }
+         post{
+             success{
+                    echo "Archive the File"
+                    archiveArtifacts artifacts:'**/target/*.war'
+                     }
+               }
+              
+             }
+
+        
+        stage('Deploy to tomcat server'){
             steps{
-               bat 'mvn package'
+                deploy adapters: [tomcat9(credentialsId: 'e2f497ff-8027-4ca5-b2f9-8adef7bbb8a4', path: '', url: 'http://localhost:8082/')], contextPath: null, war: '**/*.war'
+               }
             }
-        }
-    }
+      
+         }
 }
